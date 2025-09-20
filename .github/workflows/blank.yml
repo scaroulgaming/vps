@@ -1,0 +1,33 @@
+- "./data/nginx:/etc/nginx/http.d"
+      - "./data/certs:/etc/letsencrypt"
+      - "./data/logs:/app/storage/logs"
+    environment:
+      <<: [*panel-environment, *mail-environment]
+      DB_PASSWORD: *db-password
+      APP_ENV: "production"
+      APP_ENVIRONMENT_ONLY: "false"
+      CACHE_DRIVER: "redis"
+      SESSION_DRIVER: "redis"
+      QUEUE_DRIVER: "redis"
+      REDIS_HOST: "cache"
+      DB_HOST: "database"
+      DB_PORT: "3306"
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+mkdir -p ./data/{database,var,nginx,certs,logs}
+
+docker-compose up -d
+
+docker-compose run --rm panel php artisan p:user:make
+
+
+
+bash <(curl -s https://pterodactyl-installer.se)
+
+
+docker network create --driver bridge --subnet 172.30.0.0/16 pterodactyl_nw
